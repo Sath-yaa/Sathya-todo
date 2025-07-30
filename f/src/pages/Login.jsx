@@ -5,17 +5,14 @@ import API from "../api";
 export default function Login() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [touched, setTouched] = useState({ email: false, password: false });
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async () => {
     setTouched({ email: true, password: true });
-
-    // Basic client-side validation
-    if (!form.email || !form.password) {
-      return;
-    }
+    if (!form.email || !form.password) return;
 
     setLoading(true);
     setError("");
@@ -48,15 +45,29 @@ export default function Login() {
           )}
         </div>
 
-        <div>
+        <div className="relative">
           <input
-            type="password"
-            className="w-full p-2 rounded text-white bg-slate-600"
+            type={showPassword ? "text" : "password"}
+            className="w-full p-2 rounded text-white bg-slate-600 pr-10"
             placeholder="Password"
             value={form.password}
             onChange={(e) => setForm({ ...form, password: e.target.value })}
             onBlur={() => setTouched({ ...touched, password: true })}
           />
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-2 top-2 cursor-pointer"
+          >
+            {showPassword ? (
+              <svg width="20" height="20" fill="black" viewBox="0 0 24 24">
+                <path d="M12 4.5C7 4.5 2.73 8.11 1 12c1.73 3.89 6 7.5 11 7.5s9.27-3.61 11-7.5c-1.73-3.89-6-7.5-11-7.5zm0 13c-3.04 0-5.5-2.46-5.5-5.5S8.96 6.5 12 6.5s5.5 2.46 5.5 5.5-2.46 5.5-5.5 5.5zm0-9A3.5 3.5 0 0 0 8.5 12 3.5 3.5 0 0 0 12 15.5 3.5 3.5 0 0 0 15.5 12 3.5 3.5 0 0 0 12 8.5z" />
+              </svg>
+            ) : (
+              <svg width="20" height="20" fill="black" viewBox="0 0 24 24">
+                <path d="M12 6c-3.03 0-5.88 1.69-8 4.5C6.12 13.31 8.97 15 12 15c3.03 0 5.88-1.69 8-4.5C17.88 7.69 15.03 6 12 6zm0 7.5c-1.66 0-3-1.34-3-3s1.34-3 3-3a3 3 0 0 1 3 3c0 1.66-1.34 3-3 3z" />
+              </svg>
+            )}
+          </span>
           {touched.password && !form.password && (
             <p className="text-red-400 text-sm">Password is required</p>
           )}
