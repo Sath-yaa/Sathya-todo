@@ -5,6 +5,7 @@ import API from "../api";
 export default function Todo() {
   const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const user = JSON.parse(localStorage.getItem("user"));
   const navigate = useNavigate();
 
@@ -19,13 +20,22 @@ export default function Todo() {
   }, []);
 
   const addTodo = async () => {
-    await API.post("/todos", { title, userId: user._id });
+    if (!title.trim()) return;
+    await API.post("/todos", { title: title.trim(), userId: user._id });
     setTitle("");
+    setSuccessMsg("✅ Added successfully!");
+
+    setTimeout(() => {
+      setSuccessMsg("");
+    }, 2000);
+
     fetchTodos();
   };
 
   const updateTodo = async (id, status) => {
-    await API.put(`/todos/${id}`, { status: status === "pending" ? "completed" : "pending" });
+    await API.put(`/todos/${id}`, {
+      status: status === "pending" ? "completed" : "pending",
+    });
     fetchTodos();
   };
 
@@ -38,28 +48,51 @@ export default function Todo() {
     <div className="min-h-screen bg-slate-900 text-white p-6">
       <h1 className="text-3xl font-bold mb-6">Welcome, {user.name}</h1>
 
-      <div className="flex mb-6">
+      <div className="flex mb-2">
         <input
           className="flex-1 p-2 rounded-l bg-white text-black"
           placeholder="Enter todo"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <button onClick={addTodo} className="bg-blue-500 px-4 py-2 rounded-r text-white font-bold">
+        <button
+          onClick={addTodo}
+          disabled={!title.trim()}
+          className={`px-4 py-2 rounded-r font-bold ${
+            title.trim()
+              ? "bg-blue-500 text-white"
+              : "bg-gray-400 text-gray-200 cursor-not-allowed"
+          }`}
+        >
           Add
         </button>
       </div>
 
+      {/* ✅ Success Message */}
+      {successMsg && (
+        <div className="text-green-400 font-semibold mb-4">{successMsg}</div>
+      )}
+
       <div className="space-y-4">
         {todos.map((todo) => (
-          <div key={todo._id} className="bg-slate-700 p-4 rounded flex justify-between items-center">
-            <div>
-              <h3 className={`text-lg font-semibold ${todo.status === "completed" ? "line-through text-green-300" : ""}`}>
+          <div
+            key={todo._id}
+            className="bg-slate-700 p-4 rounded flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+          >
+            <div className="flex-1">
+              <h3
+                className={`text-lg font-semibold ${
+                  todo.status === "completed"
+                    ? "line-through text-green-300"
+                    : ""
+                }`}
+              >
                 {todo.title}
               </h3>
               <p className="text-sm text-gray-400">{todo.status}</p>
             </div>
-            <div className="space-x-2">
+
+            <div className="flex flex-row gap-2">
               <button
                 onClick={() => updateTodo(todo._id, todo.status)}
                 className="bg-yellow-400 px-3 py-1 rounded text-black"
